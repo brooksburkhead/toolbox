@@ -9,7 +9,7 @@ def get_metadata(df: pd.core.frame.DataFrame) -> pd.core.frame.DataFrame:
   metadata_df['Rows'] = df.shape[0]
   metadata_df['Nulls'] = df.isnull().sum()
   metadata_df['Null %'] = metadata_df['Nulls'] / df.shape[0] * 100
-  metadata_df = pd.concat([metadata_df, df.describe(include = 'all').transpose().astype({"count" : "int"})], axis = 'columns')
+  metadata_df = pd.concat([metadata_df, df.describe(include = 'all').transpose().astype({"count" : "int"})], axis = 'columns').rename(columns = {"top" : "mode", "50%" : "median"})
   metadata_df['unique'] = df.nunique()
   
 
