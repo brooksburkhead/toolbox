@@ -10,7 +10,7 @@ def get_metadata(df: pd.core.frame.DataFrame) -> pd.core.frame.DataFrame:
   metadata_df['Data Types'] = df.dtypes
   metadata_df['Memory'] = df.memory_usage(deep = True)
   metadata_df = pd.concat([metadata_df, df.describe(include = 'all').transpose()], axis = 'columns')
-  metadata_df['Unique'] = df.nunique()
+  metadata_df['unique'] = df.nunique()
   
 
   return metadata_df
