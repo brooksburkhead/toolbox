@@ -1,3 +1,4 @@
+import pandas as pd
 def get_metadata(df: pd.core.frame.DataFrame) -> pd.core.frame.DataFrame:
   ''' Given a dataframe, returns new dataframe containing metadata for given dataframe.
 
