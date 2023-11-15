@@ -82,6 +82,23 @@ def columns_drop( cols, df ):
   df.drop( cols, axis = 1, inplace = True )
   return None
 
+def find_binary_columns( df ):
+  '''
+  Given a dataframe, returns a meta dataframe of binary columns
+  '''
+  
+  md = get_metadata( df )
+  filter = ( ( md["Data Types"] == "object" ) & ( md["unique"] == 2 ) )
+  return md[ filter ]
+                          
+def encode_binary( cols, df ):
+  '''
+  Drops binary column, one-hot encodes binary columns, and keeps only one column.
+  Returns a modified data frame.
+  '''
+
+  one_hot =  pd.get_dummies(df[ cols ], drop_first = True )
+  return df.drop( columns = cols ).join( one_hot )
 
 
 
