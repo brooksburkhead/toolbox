@@ -41,4 +41,10 @@ def null_columns_identify( df, threshold = 75 ):
   md[ filter ]
   return md[ filter ][["Rows","Nulls","Null %"]]
 
+def null_columns_drop( cols, df ):
+  '''
+  Given a list of columns to delete from a data frame, deletes the columns in-place
+  '''
+  
+  return id_columns_drop( cols, df )
 
