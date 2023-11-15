@@ -109,7 +109,7 @@ def find_object_with_low_counts( df, threshold = 20 ):
   filter = ( ( md["unique"] >= 3 ) & ( md["unique"] <= threshold ) & ( md["Data Types"] == "object") )
   return md[ filter ].sort_values( by = "unique", ascending = False )
 
-def encode_objects( df ):
+def encode_objects( cols, df ):
   '''
   Drops object columns and one-hot encodes object columns.
   Returns a modified data frame.
