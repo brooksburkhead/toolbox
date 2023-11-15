@@ -23,4 +23,13 @@ def id_columns_identify( df, threshold = 90 ):
   cols_to_del = md[ filter ][["unique","count"]].index
   return df[ cols_to_del ].head()
 
+def id_columns_drop( list_of_cols_to_drop, df ):
+  '''
+  Given a list of columns to delete from a data frame, deletes the columns in-place
+  '''
+  
+  df.drop( list_of_cols_to_drop, axis = 1, inplace = True )
+  return None
+
+
 
