@@ -1,2 +1,2 @@
 # toolbox
-Useful Data Science Fucntions
+Useful Data Science Functions
