@@ -48,3 +48,43 @@ def null_columns_drop( cols, df ):
   
   return id_columns_drop( cols, df )
 
+def null_rows_identify( df, threshold = 5 ):
+  '''
+  Identify rows will enough nulls to drop
+  '''
+  
+  md = get_metadata( df )
+  filter = ( ( md["Null %"] <= threshold ) & ( md["Nulls"] > 0 ) )
+  return  md[ filter ][["Rows", "Nulls","Null %"]].sort_values( by = ["Null %"], ascending = False )
+
+def null_rows_drop( cols, df ):
+  '''
+  Given a list of columns, deletes the rows with nulls in-place
+  '''
+  
+  df.dropna(subset = cols , how='any', inplace = True )
+  return None
+
+def find_unary_columns( df ):
+  '''
+  Given a dataframe, returns a meta dataframe of unary columns
+  '''
+  md = get_metadata( df )
+  filter = ( md["unique"] == 1 )
+  return md[ filter ]
+
+
+def columns_drop( cols, df ):
+  '''
+  Given a list of columns to delete from a data frame, deletes the columns in-place
+  '''
+  
+  df.drop( cols, axis = 1, inplace = True )
+  return None
+
+
+
+
+
+
+
