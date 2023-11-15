@@ -48,3 +48,19 @@ def null_columns_drop( cols, df ):
   
   return id_columns_drop( cols, df )
 
+def null_rows_identify( df, threshold = 5 ):
+  '''
+  Identify rows will enough nulls to drop
+  '''
+  
+  md = get_metadata( df )
+  filter = ( ( md["Null %"] <= threshold ) & ( md["Nulls"] > 0 ) )
+  return  md[ filter ][["Rows", "Nulls","Null %"]]
+
+def null_rows_drop( cols, df ):
+  '''
+  Given a list of columns, deletes the rows with nulls in-place
+  '''
+  
+  df.dropna(subset = cols , how='any', inplace = True )
+  return None
