@@ -100,7 +100,21 @@ def encode_binary( cols, df ):
   one_hot =  pd.get_dummies(df[ cols ], drop_first = True )
   return df.drop( columns = cols ).join( one_hot )
 
+def find_object_with_low_counts( df, threshold = 20 ):
+  '''
+  Given a dataframe, returns a meta dataframe of object columns with fewer than {threshold} counts.
+  '''
 
+  md = get_metadata( df )
+  filter = ( ( md["unique"] >= 3 ) & ( md["unique"] <= threshold ) & ( md["Data Types"] == "object") )
+  return md[ filter ].sort_values( by = "unique", ascending = False )
+
+def encode_objects( df ):
+  '''
+  Drops object columns and one-hot encodes object columns.
+  Returns a modified data frame.
+  '''
+  return df.drop( columns = cols ).join( pd.get_dummies(df[ cols ] ) )
 
 
 
