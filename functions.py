@@ -55,7 +55,7 @@ def null_rows_identify( df, threshold = 5 ):
   
   md = get_metadata( df )
   filter = ( ( md["Null %"] <= threshold ) & ( md["Nulls"] > 0 ) )
-  return  md[ filter ][["Rows", "Nulls","Null %"]]
+  return  md[ filter ][["Rows", "Nulls","Null %"]].sort_values( by = ["Null %"], ascending = False )
 
 def null_rows_drop( cols, df ):
   '''
