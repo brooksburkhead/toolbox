@@ -31,5 +31,14 @@ def id_columns_drop( list_of_cols_to_drop, df ):
   df.drop( list_of_cols_to_drop, axis = 1, inplace = True )
   return None
 
+def null_columns_identify( df, threshold = 75 ):
+  '''
+  Identify columns will enough nulls to drop
+  '''
+  
+  md = get_metadata( df )
+  filter = ( md["Null %"] >= threshold )
+  md[ filter ]
+  return md[ filter ][["Rows","Nulls","Null %"]]
 
 
