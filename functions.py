@@ -64,3 +64,27 @@ def null_rows_drop( cols, df ):
   
   df.dropna(subset = cols , how='any', inplace = True )
   return None
+
+def find_unary_columns( df ):
+  '''
+  Given a dataframe, returns a meta dataframe of unary columns
+  '''
+  md = get_metadata( df )
+  filter = ( md["unique"] == 1 )
+  return md[ filter ]
+
+
+def columns_drop( cols, df ):
+  '''
+  Given a list of columns to delete from a data frame, deletes the columns in-place
+  '''
+  
+  df.drop( cols, axis = 1, inplace = True )
+  return None
+
+
+
+
+
+
+
