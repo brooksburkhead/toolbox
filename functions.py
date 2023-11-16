@@ -5,7 +5,7 @@ def get_metadata(df: pd.core.frame.DataFrame) -> pd.core.frame.DataFrame:
   '''
   metadata_df = pd.DataFrame()
   metadata_df['Data Types'] = df.dtypes
-  metadata_df['Memory'] = df.memory_usage(deep = True)
+  metadata_df['Memory'] = df.memory_usage( deep = True, index = False )
   metadata_df['Rows'] = df.shape[0]
   metadata_df['Nulls'] = df.isnull().sum()
   metadata_df['Null %'] = metadata_df['Nulls'] / df.shape[0] * 100
@@ -82,8 +82,39 @@ def columns_drop( cols, df ):
   df.drop( cols, axis = 1, inplace = True )
   return None
 
+def find_binary_columns( df ):
+  '''
+  Given a dataframe, returns a meta dataframe of binary columns
+  '''
+  
+  md = get_metadata( df )
+  filter = ( ( md["Data Types"] == "object" ) & ( md["unique"] == 2 ) )
+  return md[ filter ]
+                          
+def encode_binary( cols, df ):
+  '''
+  Drops binary column, one-hot encodes binary columns, and keeps only one column.
+  Returns a modified data frame.
+  '''
 
+  one_hot =  pd.get_dummies(df[ cols ], drop_first = True )
+  return df.drop( columns = cols ).join( one_hot )
 
+def find_object_with_low_counts( df, threshold = 20 ):
+  '''
+  Given a dataframe, returns a meta dataframe of object columns with fewer than {threshold} counts.
+  '''
+
+  md = get_metadata( df )
+  filter = ( ( md["unique"] >= 3 ) & ( md["unique"] <= threshold ) & ( md["Data Types"] == "object") )
+  return md[ filter ].sort_values( by = "unique", ascending = False )
+
+def encode_objects( cols, df ):
+  '''
+  Drops object columns and one-hot encodes object columns.
+  Returns a modified data frame.
+  '''
+  return df.drop( columns = cols ).join( pd.get_dummies(df[ cols ] ) )
 
 
 
