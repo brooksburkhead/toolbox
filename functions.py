@@ -1,8 +1,24 @@
 import pandas as pd
-def get_metadata(df: pd.core.frame.DataFrame) -> pd.core.frame.DataFrame:
-  '''
-  Given a dataframe, returns new dataframe containing metadata for given dataframe.
-  '''
+
+def get_metadata(df: pd.DataFrame) -> pd.DataFrame:
+  """
+   Generate metadata for a given DataFrame.
+
+  Args:
+      df (pd.DataFrame): Input DataFrame
+
+  Returns:
+      pd.DataFrame: DataFrame containing metadata.
+  """
+  
+  #input validation
+  if not isinstance(df, pd.DataFrame):
+    raise ValueError("Input must be a Pandas DataFrame")
+  
+  #check if DataFrame is empty
+  if df.empty:
+    raise ValueError("Cannot generate metadata for empty DataFrame!")
+  
   metadata_df = pd.DataFrame()
   metadata_df['Data Types'] = df.dtypes
   metadata_df['Memory'] = df.memory_usage( deep = True, index = False )
@@ -11,6 +27,7 @@ def get_metadata(df: pd.core.frame.DataFrame) -> pd.core.frame.DataFrame:
   metadata_df['Null %'] = metadata_df['Nulls'] / df.shape[0] * 100
   metadata_df = pd.concat([metadata_df, df.describe(include = 'all').transpose().astype({"count" : "int"})], axis = 'columns').rename(columns = {"top" : "mode", "50%" : "median"})
   metadata_df['unique'] = df.nunique()
+  
   return metadata_df
 
 def id_columns_identify( df, threshold = 90 ):
@@ -21,14 +38,16 @@ def id_columns_identify( df, threshold = 90 ):
   md = get_metadata( df )
   filter = ( md["unique"] >= threshold/100 * md["count"] )
   cols_to_del = md[ filter ][["unique","count"]].index
+  
   return df[ cols_to_del ].head()
 
-def id_columns_drop( list_of_cols_to_drop, df ):
+def id_columns_drop( list_of_cols_to_drop, df ) -> None:
   '''
   Given a list of columns to delete from a data frame, deletes the columns in-place
   '''
   
   df.drop( list_of_cols_to_drop, axis = 1, inplace = True )
+  
   return None
 
 def null_columns_identify( df, threshold = 75 ):
