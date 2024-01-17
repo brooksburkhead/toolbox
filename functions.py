@@ -64,9 +64,6 @@ def identify_id_columns( df: pd.DataFrame, threshold: float = 90 ) -> pd.DataFra
   
   identified_columns_df = df[high_cardinality_columns]
   
-  #include metadata in output
-  identified_columns_df.metadata = metadata.loc[high_cardinality_columns]
-  
   return identified_columns_df
 
 def id_columns_drop( list_of_cols_to_drop, df ) -> None:
@@ -101,9 +98,9 @@ def null_columns_identify( df: pd.DataFrame, threshold: float = 75 ) -> pd.DataF
   
   metadata = get_metadata( df )
   high_null_filter = ( metadata["Null %"] >= threshold )
-  high_null_columns = metadata[ high_null_filter ]
+  high_null_columns = metadata[ high_null_filter ].index
   
-  if not high_null_columns:
+  if high_null_columns.empty:
     return f"No columns found with more than {threshold}% nulls"
   
   identified_columns_df = df[high_null_columns]
@@ -120,7 +117,7 @@ def null_columns_drop( cols, df ):
   
   return id_columns_drop( cols, df )
 
-def null_rows_identify( df, threshold = 5 ):
+def null_rows_identify( df: pd.DataFrame, threshold = 5 ) -> pd.DataFrame:
   '''
   Identify rows will enough nulls to drop
   '''
@@ -137,22 +134,35 @@ def null_rows_drop( cols, df ):
   df.dropna(subset = cols , how='any', inplace = True )
   return None
 
-def find_unary_columns( df ):
-  '''
-  Given a dataframe, returns a meta dataframe of unary columns
-  '''
-  md = get_metadata( df )
-  filter = ( md["unique"] == 1 )
-  return md[ filter ]
+def find_unary_columns( df: pd.DataFrame ) -> pd.DataFrame:
+  """
+  Identify unary columns in a DataFrame
 
+  Args:
+      df (pd.DataFrame): Input DataFrame
 
-def columns_drop( cols, df ):
-  '''
-  Given a list of columns to delete from a data frame, deletes the columns in-place
-  '''
+  Raises:
+      ValueError: If the input is not a Pandas DataFrame
+
+  Returns:
+      pd.DataFrame or str: DataFrame containing identified columns or a message if none are found.
+  """
   
-  df.drop( cols, axis = 1, inplace = True )
-  return None
+  #input validation
+  if not isinstance(df, pd.DataFrame):
+    raise ValueError("Input must be a Pandas DataFrame.")
+  
+  metadata = get_metadata( df )
+  unary_filter = ( metadata["unique"] == 1 )
+  unary_columns = metadata[ unary_filter ].index
+  
+  if unary_columns.empty:
+    return "No unary columns found"
+  
+  identified_unary_columns = df[unary_columns]
+  
+  return identified_unary_columns
+
 
 def find_binary_columns( df ):
   '''
