@@ -30,16 +30,36 @@ def get_metadata(df: pd.DataFrame) -> pd.DataFrame:
   
   return metadata_df
 
-def id_columns_identify( df, threshold = 90 ):
-  '''
-  Identifies columns that could be IDs. Returns a data frame for review.
-  '''
+def identify_id_columns( df: pd.DataFrame, threshold: float = 90 ) -> pd.DataFrame:
+  """
+  Identify columns with high cardinality, suggesting potential identifier columns.
+
+  Args:
+      df (pd.DataFrame): Input DataFrame
+      threshold (float, optional): Threshold percentage for identifying high cardinality columns. Defaults to 90.
+
+  Returns:
+      pd.DataFrame: DataFrame containing identified columns.
+  """
   
-  md = get_metadata( df )
-  filter = ( md["unique"] >= threshold/100 * md["count"] )
-  cols_to_del = md[ filter ][["unique","count"]].index
+  #input validation
+  if not isinstance(df, pd.DataFrame):
+    raise ValueError("Input must be a Pandas DataFrame.")
   
-  return df[ cols_to_del ].head()
+  #check if threshold is a valid percentage
+  if not 0 <= threshold <= 100:
+    raise ValueError("Threshold must be a percentage between 0 and 100.")
+  
+  metadata = get_metadata( df )
+  high_cardinality_filter = ( metadata["unique"] >= threshold/100 * metadata["count"] )
+  high_cardinality_columns = metadata[ high_cardinality_filter ][["unique","count"]].index
+  
+  identified_columns_df = df[high_cardinality_columns]
+  
+  #include metadata in output
+  identified_columns_df.metadata = metadata.loc[high_cardinality_columns]
+  
+  return identified_columns_df
 
 def id_columns_drop( list_of_cols_to_drop, df ) -> None:
   '''
