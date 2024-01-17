@@ -1,4 +1,7 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 def get_metadata(df: pd.DataFrame) -> pd.DataFrame:
   """
@@ -66,14 +69,7 @@ def identify_id_columns( df: pd.DataFrame, threshold: float = 90 ) -> pd.DataFra
   
   return identified_columns_df
 
-def id_columns_drop( list_of_cols_to_drop, df ) -> None:
-
-  
-  df.drop( list_of_cols_to_drop, axis = 1, inplace = True )
-  
-  return None
-
-def null_columns_identify( df: pd.DataFrame, threshold: float = 75 ) -> pd.DataFrame:
+def identify_null_columns( df: pd.DataFrame, threshold: float = 75 ) -> pd.DataFrame:
   """
   Identifies columns with high null percentage.
 
@@ -105,34 +101,7 @@ def null_columns_identify( df: pd.DataFrame, threshold: float = 75 ) -> pd.DataF
   
   identified_columns_df = df[high_null_columns]
   
-  #include metadata in output
-  identified_columns_df.metadata = metadata.loc[high_null_columns]
-  
   return identified_columns_df
-
-def null_columns_drop( cols, df ):
-  '''
-  Given a list of columns to delete from a data frame, deletes the columns in-place
-  '''
-  
-  return id_columns_drop( cols, df )
-
-def null_rows_identify( df: pd.DataFrame, threshold = 5 ) -> pd.DataFrame:
-  '''
-  Identify rows will enough nulls to drop
-  '''
-  
-  md = get_metadata( df )
-  filter = ( ( md["Null %"] <= threshold ) & ( md["Nulls"] > 0 ) )
-  return  md[ filter ][["Rows", "Nulls","Null %"]].sort_values( by = ["Null %"], ascending = False )
-
-def null_rows_drop( cols, df ):
-  '''
-  Given a list of columns, deletes the rows with nulls in-place
-  '''
-  
-  df.dropna(subset = cols , how='any', inplace = True )
-  return None
 
 def find_unary_columns( df: pd.DataFrame ) -> pd.DataFrame:
   """
@@ -163,40 +132,89 @@ def find_unary_columns( df: pd.DataFrame ) -> pd.DataFrame:
   
   return identified_unary_columns
 
+def find_binary_columns( df: pd.DataFrame )-> pd.DataFrame:
+  """
+  Identify binary columns in a DataFrame
 
-def find_binary_columns( df ):
-  '''
-  Given a dataframe, returns a meta dataframe of binary columns
-  '''
+  Args:
+      df (pd.DataFrame): Input DataFrame
+
+  Raises:
+      ValueError: If the input is not a Pandas DataFrame
+
+  Returns:
+      pd.DataFrame or str: DataFrame containing identified columns or a message if none are found.
+  """
   
-  md = get_metadata( df )
-  filter = ( ( md["Data Types"] == "object" ) & ( md["unique"] == 2 ) )
-  return md[ filter ]
+  #input validation
+  if not isinstance(df, pd.DataFrame):
+    raise ValueError("Input must be a Pandas DataFrame.")
+  
+  metadata = get_metadata( df )
+  binary_filter = ( metadata["unique"] == 2 )
+  binary_columns = metadata[ binary_filter ].index
+  
+  if binary_columns.empty:
+    return "No binary columns found"
+  
+  identified_binary_columns = df[binary_columns]
+  
+  return identified_binary_columns
                           
-def encode_binary( cols, df ):
-  '''
-  Drops binary column, one-hot encodes binary columns, and keeps only one column.
-  Returns a modified data frame.
-  '''
+def plot_correlation_matrix(df: pd.DataFrame, figsize=(10, 8)) -> None:
+    """
+    Visualize the correlation matrix of a DataFrame.
 
-  one_hot =  pd.get_dummies(df[ cols ], drop_first = True )
-  return df.drop( columns = cols ).join( one_hot )
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+        figsize (tuple): Figure size for the plot.
 
-def find_object_with_low_counts( df, threshold = 20 ):
-  '''
-  Given a dataframe, returns a meta dataframe of object columns with fewer than {threshold} counts.
-  '''
+    Returns:
+        None
+    """
+    corr_matrix = df.corr()
+    plt.figure(figsize=figsize)
+    sns.heatmap(corr_matrix, annot=False, cmap='coolwarm', fmt=".2f")
+    plt.title("Correlation Matrix")
+    plt.show()
 
-  md = get_metadata( df )
-  filter = ( ( md["unique"] >= 3 ) & ( md["unique"] <= threshold ) & ( md["Data Types"] == "object") )
-  return md[ filter ].sort_values( by = "unique", ascending = False )
+def plot_distribution(df: pd.DataFrame, column, figsize=(8, 6)) -> None:
+    """
+    Plot the distribution of a numerical column in a DataFrame.
 
-def encode_objects( cols, df ):
-  '''
-  Drops object columns and one-hot encodes object columns.
-  Returns a modified data frame.
-  '''
-  return df.drop( columns = cols ).join( pd.get_dummies(df[ cols ] ) )
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+        column (str): Name of the numerical column.
+        figsize (tuple): Figure size for the plot.
+
+    Returns:
+        None
+    """
+    plt.figure(figsize=figsize)
+    sns.histplot(df[column], kde=True)
+    plt.title(f"Distribution of {column}")
+    plt.xlabel(column)
+    plt.ylabel("Frequency")
+    plt.show()
+
+def plot_categorical_counts(df: pd.DataFrame, column, figsize=(8, 6)) -> None:
+    """
+    Visualize counts of categorical values in a column.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+        column (str): Name of the categorical column.
+        figsize (tuple): Figure size for the plot.
+
+    Returns:
+        None
+    """
+    plt.figure(figsize=figsize)
+    sns.countplot(x=column, data=df, order=df[column].value_counts().index)
+    plt.title(f"Counts of {column}")
+    plt.xlabel(column)
+    plt.ylabel("Count")
+    plt.show()
 
 
 
