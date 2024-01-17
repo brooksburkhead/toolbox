@@ -6,7 +6,11 @@ def get_metadata(df: pd.DataFrame) -> pd.DataFrame:
 
   Args:
       df (pd.DataFrame): Input DataFrame
-
+      
+  Raises:
+      ValueError: If the input is not a Pandas DataFrame.
+      ValueError: If the input DataFrame is empty
+      
   Returns:
       pd.DataFrame: DataFrame containing metadata.
   """
@@ -35,8 +39,12 @@ def identify_id_columns( df: pd.DataFrame, threshold: float = 90 ) -> pd.DataFra
   Identify columns with high cardinality, suggesting potential identifier columns.
 
   Args:
-      df (pd.DataFrame): Input DataFrame
+      df (pd.DataFrame): Input DataFrame.
       threshold (float, optional): Threshold percentage for identifying high cardinality columns. Defaults to 90.
+
+  Raises:
+      ValueError: If the input is not a Pandas DataFrame.
+      ValueError: If the threshold is not a percentage between 0 and 100.
 
   Returns:
       pd.DataFrame: DataFrame containing identified columns.
@@ -62,23 +70,48 @@ def identify_id_columns( df: pd.DataFrame, threshold: float = 90 ) -> pd.DataFra
   return identified_columns_df
 
 def id_columns_drop( list_of_cols_to_drop, df ) -> None:
-  '''
-  Given a list of columns to delete from a data frame, deletes the columns in-place
-  '''
+
   
   df.drop( list_of_cols_to_drop, axis = 1, inplace = True )
   
   return None
 
-def null_columns_identify( df, threshold = 75 ):
-  '''
-  Identify columns will enough nulls to drop
-  '''
+def null_columns_identify( df: pd.DataFrame, threshold: float = 75 ) -> pd.DataFrame:
+  """
+  Identifies columns with high null percentage.
+
+  Args:
+      df (pd.DataFrame): Input DataFrame
+      threshold (float, optional): Threshold percentage for identifying columns with high null percentage. Defaults to 75.
+
+  Raises:
+      ValueError: If the input is not a Pandas DataFrame.
+      ValueError: If the threshold is not a percentage between 0 and 100.
+
+  Returns:
+      pd.DataFrame or str: DataFrame containing identified columns or a message if none are found.
+  """
+  #input validation
+  if not isinstance(df, pd.DataFrame):
+    raise ValueError("Input must be a Pandas DataFrame.")
   
-  md = get_metadata( df )
-  filter = ( md["Null %"] >= threshold )
-  md[ filter ]
-  return md[ filter ][["Rows","Nulls","Null %"]]
+  #check if threshold is a valid percentage
+  if not 0 <= threshold <= 100:
+    raise ValueError("Threshold must be a percentage between 0 and 100.")
+  
+  metadata = get_metadata( df )
+  high_null_filter = ( metadata["Null %"] >= threshold )
+  high_null_columns = metadata[ high_null_filter ]
+  
+  if not high_null_columns:
+    return f"No columns found with more than {threshold}% nulls"
+  
+  identified_columns_df = df[high_null_columns]
+  
+  #include metadata in output
+  identified_columns_df.metadata = metadata.loc[high_null_columns]
+  
+  return identified_columns_df
 
 def null_columns_drop( cols, df ):
   '''
